@@ -28,6 +28,7 @@ class request_pesanan extends FormRequest
             "Tanggal_Pesan" => ['required', 'String'],
             "Tanggal_Diambil" => ['required', 'String'],
             "Poin_Didapat" => ['numeric'],
+            "Alamat_Id" => ['required', 'numeric'],
         ];
     }
 

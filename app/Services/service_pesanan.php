@@ -177,6 +177,25 @@ class service_pesanan
         $pesanan->save();
     }
 
+    // Fungsi baru untuk pesanan
+    public function PesanProdukNew($request): void
+    {
+        $pesanan = new model_pesanan();
+        $pesanan->Id = $request['Id'];
+        $pesanan->Customer_Email = $request['Customer_Email'];
+        $pesanan->Tanggal_Pesan = $request['Tanggal_Pesan'];
+        $pesanan->Tanggal_Diambil = $request['Tanggal_Diambil'];
+        $pesanan->Status = "Menunggu Pembayaran";
+        $pesanan->Status_Pembayaran = "Belum Lunas";
+        $pesanan->Poin_Didapat = $request['Poin_Didapat'];
+        $pesanan->Alamat_Id = $request['Alamat_Id']; // add alamat attribute
+        $poinDigunakan = $this->penggunaanPoin($request['Customer_Email'], $request['Total']);
+        $pesanan->Penggunaan_Poin = $poinDigunakan;
+        $totalBayar = $this->updateTotalBayar($poinDigunakan, $request['Total']);
+        $pesanan->Total = $totalBayar;
+        $pesanan->save();
+    }
+
     // Daftar Pesanan yang Perlu Input Jarak
     public function getPesananNeedInputJarak(): object
     {
@@ -197,44 +216,24 @@ class service_pesanan
         )
             ->leftJoin('customer', 'pesanan.Customer_Email', '=', 'customer.Email')
             ->leftJoin('alamat', 'pesanan.Alamat_Id', '=', 'alamat.Id')
-            ->where('pesanan.Status', 'Menunggu Pembayaran') // Add kondisi
+            ->where('pesanan.Status', 'Menunggu Pembayaran') // Add condition
             ->where('pesanan.Status_Pembayaran', 'Belum Lunas')
-            ->whereNull('pesanan.Alamat_Id')
             ->get();
     }
 
-    // Input Jarak Pengiriman
-    // public function inputJarak($pesananId, $alamatId): void
-    // {
-    //     $pesanan = model_pesanan::findOrFail($pesananId);
-    //     $pesanan->Alamat = $alamatId;
-
-    //     // get id pesanan 
-
-    //     // put pesanan melalui kondisi berikut 
-    //     // 1. put alamat_id from table pesanan where alamat_id having foreign key (pesanan.customer_email = customer.email)
-    //     // 2. then input jarak where input is from admin 
-    //     // 3. put value "jarak: from table alamat  where alamat_id = customer
-    //     // 4. hitung ongkir dan total (update atau create ?) di table pesanan 
-
-    //     // else ga ngapa ngapain 
-    //     $pesanan->save();
-    // }
-
+    // Fungsi hitung ongkir
     private function calculateOngkir($jarak)
     {
-        // Define the base ongkir and the increment amount
-        $baseOngkir = 10000; // Base ongkir for jarak less than 5 km
-        $increment = 5000;    // Increment for every 5 km increase in jarak
+        $baseOngkir = 10000;
+        $increment = 5000;
 
-        // Calculate ongkir based on jarak
         $ongkir = $baseOngkir + (($jarak > 5 ? ceil(($jarak - 5) / 5) : 0) * $increment);
 
         return $ongkir;
     }
 
     // Input Jarak Pengiriman
-    public function updatePesanan($id, $jarak)
+    public function updateJarak($id, $jarak)
     {
         // Get pesanan by id
         $pesanan = model_pesanan::find($id);
@@ -257,7 +256,6 @@ class service_pesanan
         $pesanan->Alamat_Id = $alamat->Id;
 
         // Update jarak in pesanan
-        // $pesanan->Jarak = $jarak;
         $alamat->Jarak = $jarak;
         $alamat->save();
 
@@ -293,7 +291,32 @@ class service_pesanan
         )
             ->leftJoin('customer', 'pesanan.Customer_Email', '=', 'customer.Email')
             ->leftJoin('alamat', 'pesanan.Alamat_Id', '=', 'alamat.Id')
-            ->where('pesanan.Status_Pembayaran', 'Sudah Dibayar') // Add kondisi
+            ->where('pesanan.Status_Pembayaran', 'Sudah Dibayar') // Add condition
             ->get();
+    }
+
+    // Input jumlah pembayaran
+    public function updateTotalCustBayar($id, $totalCustBayar)
+    {
+        // Get pesanan by id
+        $pesanan = model_pesanan::find($id);
+
+        if (!$pesanan) {
+            throw new \Exception("Pesanan not found.");
+        }
+
+        // Calculate the tip
+        $tip = $totalCustBayar - $pesanan->Total;
+
+        // Check if the total customer payment is sufficient
+        if ($tip < 0) {
+            throw new \Exception("Total customer payment is insufficient.");
+        }
+
+        // Update the tip
+        $pesanan->Tip = $tip;
+        $pesanan->save();
+
+        return $pesanan;
     }
 }

@@ -84,9 +84,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Daftar Pesanan yang Perlu Input Jarak
         Route::get('pesanan_input_jarak', [controller_pesanan::class, 'getPesananNeedInputJarak']);
         // Input Jarak 
-        Route::put('pesanan/{id}', [controller_pesanan::class, 'updatePesanan']);
+        Route::put('pesanan/{id}/input_jarak', [controller_pesanan::class, 'updateJarak']);
         // Daftar Pesanan yang Perlu Konfirmasi
         Route::get('pesanan_konfirmasi', [controller_pesanan::class, 'getPesananNeedConfirm']);
+        // Input Jumlah Pembayaran
+        Route::post('pesanan/{id}/input_jumlah', [controller_pesanan::class, 'updateTotalCustBayar']);
 
         Route::post('resep', [controller_resep::class, 'createresep']);
         Route::delete('resep/{id_resep}', [controller_resep::class, 'deleteresep']);
@@ -167,3 +169,6 @@ Route::get('getProdukInHampersWithKuota/{id}/{date}', [controller_produk::class,
 Route::get('getHampersByIdWithKuota/{id}/{date}', [controller_hampers::class, 'getHampersByIdWithKuota']);
 Route::get('getKuotaHampersById/{id}/{date}', [controller_hampers::class, 'getKuotaHampersById']);
 Route::post('AutomaticPresensi', [controller_presensi::class, 'AutomaticPresensi']);
+
+// Pesan produk new
+Route::post('pesanan', [controller_pesanan::class, 'PesanProdukNew']);

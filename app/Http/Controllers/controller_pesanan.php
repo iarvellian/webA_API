@@ -54,6 +54,16 @@ class controller_pesanan extends Controller
         ]);
     }
 
+     // New function for pesanan
+    public function PesanProdukNew(request_pesanan $request)
+    {
+        $pesananValidated = $request->validated();
+        $this->service->PesanProdukNew($pesananValidated);
+        return response()->json([
+            "message" => "Pesanan berhasil dibuat"
+        ]);
+    }
+
     // Daftar Pesanan yang Perlu Input Jarak
     public function getPesananNeedInputJarak()
     {
@@ -62,19 +72,10 @@ class controller_pesanan extends Controller
     }
 
     // Input Jarak Pengiriman
-    // public function inputJarak($pesananId, $alamatId)
-    // {
-    //     $this->service->inputJarak($pesananId, $alamatId);
-    //     return response()->json([
-    //         "message" => "Jarak updated successfully"
-    //     ]);
-    // }
-
-    // Input Jarak Pengiriman
-    public function updatePesanan(HttpRequest $request, $id)
+    public function updateJarak(HttpRequest $request, $id)
     {
         $jarak = $request->input('jarak');
-        $this->service->updatePesanan($id, $jarak);
+        $this->service->updateJarak($id, $jarak);
         return response()->json(['message' => 'Pesanan updated successfully']);
     }
     
@@ -85,5 +86,22 @@ class controller_pesanan extends Controller
         return  resource_pesanan::collection($pesanan);
     }
 
+    // Input Jumlah Pembayaran
+    public function updateTotalCustBayar(HttpRequest $request, $id)
+    {
+        $totalCustBayar = $request->input('totalCustBayar');
 
+        try {
+            $pesanan = $this->service->updateTotalCustBayar($id, $totalCustBayar);
+
+            return response()->json([
+                'message' => 'Tip updated successfully.',
+                'pesanan' => $pesanan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
 }
