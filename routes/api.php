@@ -88,7 +88,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Daftar Pesanan yang Perlu Konfirmasi
         Route::get('pesanan_konfirmasi', [controller_pesanan::class, 'getPesananNeedConfirm']);
         // Input Jumlah Pembayaran
-        Route::post('pesanan/{id}/input_jumlah', [controller_pesanan::class, 'updateTotalCustBayar']);
+        Route::put('pesanan/{id}/input_jumlah', [controller_pesanan::class, 'updateTotalCustBayar']);
 
         Route::post('resep', [controller_resep::class, 'createresep']);
         Route::delete('resep/{id_resep}', [controller_resep::class, 'deleteresep']);
